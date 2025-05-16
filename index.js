@@ -25,6 +25,7 @@ async function run() {
     // Connect to the "coffeeDB" database and access its "movies" collection
     const database = client.db("coffeeDB");
     const collection = database.collection("coffees");
+    const userCollection = database.collection("users");
 
     app.get("/coffees", async (req, res) => {
       const cursor = collection.find();
@@ -59,6 +60,39 @@ async function run() {
       //   console.log(id);
       const query = { _id: new ObjectId(id) };
       const result = await collection.deleteOne(query);
+      res.send(result);
+    });
+
+    // users API
+
+    app.get("/users", async (req, res) => {
+      const cursor = userCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.post("/users", async (req, res) => {
+      const userDetails = req.body;
+      const result = await userCollection.insertOne(userDetails);
+      res.send(result);
+    });
+    app.patch("/users", async (req, res) => {
+      const { email, lastSignInTime } = req.body;
+
+      const filter = { email: email };
+      const updateDoc = {
+        $set: {
+          lastSignInTime,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
       res.send(result);
     });
 
